@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 const sleep = (delay: number) => {
     return new Promise((resolve) => {
@@ -7,17 +7,13 @@ const sleep = (delay: number) => {
 }
 
 const agent = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-    headers: {
-        'Content-Type': 'application/json'
-    }
+    baseURL: import.meta.env.VITE_API_URL
 });
 
-agent.interceptors.request.use(async config => {
+agent.interceptors.response.use(async response => {
     try {
         await sleep(1000);
-        console.log('Request Interceptor');
-        return config;
+        return response;
     } catch (error) {
         console.log(error);
         return Promise.reject(error);
