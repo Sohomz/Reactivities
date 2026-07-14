@@ -8,5 +8,6 @@ public class MappingProfiles : AutoMapper.Profile
     {
         CreateMap<Activity, Activity>();
         CreateMap<CreateActivityDto, Activity>();
+        CreateMap<UpdateActivityDto, Activity>();
     }
 }
