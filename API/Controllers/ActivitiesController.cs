@@ -18,15 +18,8 @@ public class ActivitiesController : BaseApiController
     [HttpGet("{id}")]
     public async Task<ActionResult<Activity>> GetActivityDetail(string id)
     {
-        var result = await Mediator.Send(new GetActivityDetails.Query { Id = id });
+        return HandleResult(await Mediator.Send(new GetActivityDetails.Query { Id = id }));
 
-        if (!result.IsSuccess && result.Error == "Activity not found")
-            return NotFound();
-
-        if (result.IsSuccess)
-            return Ok(result.Value);
-
-        return BadRequest(result.Error);
     }
 
     [HttpPost]
