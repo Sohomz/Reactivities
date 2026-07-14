@@ -1,4 +1,5 @@
 using Application.Activities.Commands;
+using Application.Activities.DTOs;
 using Application.Activities.Queries;
 using Domain;
 using MediatR;
@@ -17,13 +18,21 @@ public class ActivitiesController : BaseApiController
     [HttpGet("{id}")]
     public async Task<ActionResult<Activity>> GetActivityDetail(string id)
     {
-        return await Mediator.Send(new GetActivityDetails.Query { Id = id });
+        var result = await Mediator.Send(new GetActivityDetails.Query { Id = id });
+
+        if (!result.IsSuccess && result.Error == "Activity not found")
+            return NotFound();
+
+        if (result.IsSuccess)
+            return Ok(result.Value);
+
+        return BadRequest(result.Error);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateActivity(Activity activity)
+    public async Task<IActionResult> CreateActivity(CreateActivityDto activityDto)
     {
-        return Ok(await Mediator.Send(new CreateActivity.Command { Activity = activity }));
+        return Ok(await Mediator.Send(new CreateActivity.Command { ActivityDto = activityDto }));
     }
 
     [HttpPut]

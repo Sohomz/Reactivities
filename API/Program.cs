@@ -20,7 +20,7 @@ builder.Services.AddCors(opt =>
     });
 });
 
-builder.Services.AddMediatR(x=>x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+builder.Services.AddMediatR(x => x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
 
 var app = builder.Build();
