@@ -1,4 +1,5 @@
 using Application.Activities.Commands;
+using Application.Activities.DTOs;
 using Application.Activities.Queries;
 using Domain;
 using MediatR;
@@ -11,34 +12,33 @@ public class ActivitiesController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<Activity>>> GetActivities()
     {
+        //throw new NotImplementedException();
         return await Mediator.Send(new GetActivityList.Query());
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Activity>> GetActivityDetail(string id)
     {
-        return await Mediator.Send(new GetActivityDetails.Query { Id = id });
+        return HandleResult(await Mediator.Send(new GetActivityDetails.Query { Id = id }));
+
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateActivity(Activity activity)
+    public async Task<IActionResult> CreateActivity(CreateActivityDto activityDto)
     {
-        return Ok(await Mediator.Send(new CreateActivity.Command { Activity = activity }));
+        return Ok(await Mediator.Send(new CreateActivity.Command { ActivityDto = activityDto }));
     }
 
-    [HttpPut]
-    public async Task<IActionResult> Edit(Activity activity)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Edit(string id, UpdateActivityDto activityDto)
     {
-        await Mediator.Send(new UpdateActivity.Command { Activity = activity });
-
-        return NoContent();
+        activityDto.Id = id;
+        return HandleResult(await Mediator.Send(new UpdateActivity.Command { ActivityDto = activityDto }));
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(string id)
     {
-        await Mediator.Send(new DeleteActivity.Command { Id = id });
-
-        return Ok();
+        return HandleResult(await Mediator.Send(new DeleteActivity.Command { Id = id }));
     }
 }
