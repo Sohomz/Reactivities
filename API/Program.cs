@@ -1,3 +1,4 @@
+using API.Middleware;
 using Application.Activities.Commands;
 using Application.Activities.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +23,11 @@ builder.Services.AddCors(opt =>
 
 builder.Services.AddMediatR(x => x.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+builder.Services.AddTransient<ExceptionMiddleware>();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseCors("CorsPolicy");
 
