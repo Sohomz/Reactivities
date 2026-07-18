@@ -7,17 +7,12 @@ import { activitySchema, type ActivitySchema } from "../../../lib/schemas/activi
 import { zodResolver } from "@hookform/resolvers/zod";
 import TextInput from "../../../app/shared/components/TextInput";
 
-
 export default function ActivityForm() {
   const { id } = useParams();
   const { updateActivity, createActivity, activity, isLoadingActivity } = useActivities(id);
-  
+
   // 2. You no longer need 'register' or 'errors' here!
-  const {
-    handleSubmit,
-    reset,
-    control
-  } = useForm<ActivitySchema>({
+  const { handleSubmit, reset, control } = useForm<ActivitySchema>({
     mode: "onTouched",
     resolver: zodResolver(activitySchema),
   });
@@ -29,8 +24,8 @@ export default function ActivityForm() {
     if (activity) {
       // Small fix for the date format if needed before resetting
       const formattedActivity = {
-         ...activity,
-         date: new Date(activity.date).toISOString().split("T")[0]
+        ...activity,
+        date: new Date(activity.date).toISOString().split("T")[0],
       };
       reset(formattedActivity);
     }
@@ -52,26 +47,15 @@ export default function ActivityForm() {
       >
         {/* 3. Look how much cleaner this is! Your component does the heavy lifting. */}
         <TextInput name="title" control={control} label="Title" />
-        
-        <TextInput 
-          name="description" 
-          control={control} 
-          label="Description" 
-          multiline 
-          rows={3} 
-        />
-        
+
+        <TextInput name="description" control={control} label="Description" multiline rows={3} />
+
         <TextInput name="category" control={control} label="Category" />
-        
-        <TextInput 
-          name="date" 
-          control={control} 
-          label="Date" 
-          type="date" 
-        />
-        
+
+        <TextInput name="date" control={control} label="Date" type="date" />
+
         <TextInput name="city" control={control} label="City" />
-        
+
         <TextInput name="venue" control={control} label="Venue" />
 
         <Box display="flex" justifyContent="end" gap={3}>
