@@ -1,11 +1,15 @@
 import { Box, Button, Paper, Typography } from "@mui/material";
 import { useActivities } from "../../../lib/hooks/useActivities";
-import { Link, useParams } from "react-router"; // (or react-router-dom depending on your version)
-import { useForm, type FieldValues } from "react-hook-form";
+import { Link, useNavigate, useParams } from "react-router"; // (or react-router-dom depending on your version)
+import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { activitySchema, type ActivitySchema } from "../../../lib/schemas/activityScehma";
 import { zodResolver } from "@hookform/resolvers/zod";
 import TextInput from "../../../app/shared/components/TextInput";
+import SelectInput from "../../../app/shared/components/SelectInput";
+import { categoryOptions } from "./categoryOptions";
+import DateTimeInput from "../../../app/shared/components/DateTimeInput";
+import LocationInput from "../../../app/shared/components/LocationInput";
 
 export default function ActivityForm() {
   const { id } = useParams();
@@ -17,19 +21,42 @@ export default function ActivityForm() {
     resolver: zodResolver(activitySchema),
   });
 
-  const onSubmit = (data: FieldValues) => console.log(data);
+  const navigate = useNavigate();
 
   // This perfectly handles setting your default values when editing!
   useEffect(() => {
     if (activity) {
-      // Small fix for the date format if needed before resetting
-      const formattedActivity = {
+      reset({
         ...activity,
-        date: new Date(activity.date).toISOString().split("T")[0],
-      };
-      reset(formattedActivity);
+        location: {
+          city: activity.city,
+          venue: activity.venue,
+          latitude: activity.latitude,
+          longitude: activity.longitude,
+        },
+      });
     }
   }, [activity, reset]);
+
+  const onSubmit = async (data: ActivitySchema) => {
+    const { location, ...rest } = data;
+    const flattenedData = { ...rest, ...location };
+    try {
+      if (activity) {
+        updateActivity.mutate({ ...activity, ...flattenedData } as Activity, {
+          onSuccess: () => navigate(`/activities/${activity.id}`),
+        });
+      } else {
+        createActivity.mutate(flattenedData as Activity, {
+          onSuccess: (id) => {
+            navigate(`/activities/${id}`);
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   if (isLoadingActivity) return <Typography>Loading activity...</Typography>;
 
@@ -50,13 +77,12 @@ export default function ActivityForm() {
 
         <TextInput name="description" control={control} label="Description" multiline rows={3} />
 
-        <TextInput name="category" control={control} label="Category" />
+        <Box display="flex" gap={3}>
+          <SelectInput items={categoryOptions} label="Category" control={control} name="category" />
+          <DateTimeInput label="Date" control={control} name="date" />
+        </Box>
 
-        <TextInput name="date" control={control} label="Date" type="date" />
-
-        <TextInput name="city" control={control} label="City" />
-
-        <TextInput name="venue" control={control} label="Venue" />
+        <LocationInput control={control} label="Enter the location" name="location" />
 
         <Box display="flex" justifyContent="end" gap={3}>
           <Button color="inherit" component={Link} to="/activities">

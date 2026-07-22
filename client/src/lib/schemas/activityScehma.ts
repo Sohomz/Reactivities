@@ -1,15 +1,19 @@
-import { z } from 'zod';
+import {z} from 'zod';
 
-const requiredField=((reqFld:string)=>{
-    return z.string({ error:`${reqFld} is required`}).min(1, `${reqFld} is required`);
-})
+const requiredString = (fieldName: string) => z.string({error: `${fieldName} is required`}).min(1, 
+    {error: `${fieldName} is required`})
+
 export const activitySchema = z.object({
-    title: requiredField('Title'),
-    description: requiredField('Description'),
-    category: requiredField('Category'),
-    date: requiredField('Date'),
-    city: requiredField('City'),
-    venue: requiredField('Venue')
-});
+    title: requiredString('Title'),
+    description: requiredString('Description'),
+    category: requiredString('Category'),
+    date: z.coerce.date({error: 'Date is required'}),
+    location: z.object({
+        venue: requiredString('Venue'),
+        city: z.string().optional(),
+        latitude: z.coerce.number(),
+        longitude: z.coerce.number()
+    })
+})
 
-export type ActivitySchema = z.infer<typeof activitySchema>;
+export type ActivitySchema = z.input<typeof activitySchema>;
