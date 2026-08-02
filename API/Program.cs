@@ -25,7 +25,10 @@ builder.Services.AddCors(opt =>
 {
     opt.AddPolicy("CorsPolicy", policy =>
     {
-        policy.AllowAnyMethod().AllowAnyHeader().WithOrigins("https://localhost:3000");
+        policy.AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials() // <--- CRITICAL for cookies!
+              .WithOrigins("https://localhost:3000");
     });
 });
 
@@ -43,11 +46,7 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseCors(x => x
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials()
-    .WithOrigins("http://localhost:7268", "https://localhost:7268"));
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 
