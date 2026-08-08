@@ -12,7 +12,6 @@ public class ActivitiesController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<Activity>>> GetActivities()
     {
-        //throw new NotImplementedException();
         return await Mediator.Send(new GetActivityList.Query());
     }
 
