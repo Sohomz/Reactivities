@@ -1,7 +1,9 @@
 using Application.Activities.DTOs;
+using Application.Profiles.DTOs;
 using Domain;
 
 namespace Application.Activities.Commands;
+
 public class MappingProfiles : AutoMapper.Profile
 {
     public MappingProfiles()
@@ -9,5 +11,15 @@ public class MappingProfiles : AutoMapper.Profile
         CreateMap<Activity, Activity>();
         CreateMap<CreateActivityDto, Activity>();
         CreateMap<UpdateActivityDto, Activity>();
+        CreateMap<Activity, ActivityDto>()
+            .ForMember(d => d.HostId, o => o.MapFrom(s =>
+                s.Attendees.FirstOrDefault(x => x.IsHost)!.User.Id))
+            .ForMember(d => d.HostDisplayName, o => o.MapFrom(s =>
+                s.Attendees.FirstOrDefault(x => x.IsHost)!.User.DisplayName));
+        CreateMap<ActivityAttendee, UserProfileDto>()
+            .ForMember(d => d.DisplayName, o => o.MapFrom(s => s.User.DisplayName))
+            .ForMember(d => d.Id, o => o.MapFrom(s => s.User.Id))
+            .ForMember(d => d.Bio, o => o.MapFrom(s => s.User.Bio))
+            .ForMember(d => d.ImageUrl, o => o.MapFrom(s => s.User.ImageUrl));
     }
 }
