@@ -6,7 +6,7 @@ using Persistence;
 
 namespace Infrastructure;
 
-public class UserAccessor(HttpContextAccessor httpContextAccessor, AppDbContext context): IUserAccessor
+public class UserAccessor(IHttpContextAccessor httpContextAccessor, AppDbContext context): IUserAccessor
 {
     public string GetUserId() //get from cookies by httpContextAccessor
     {
