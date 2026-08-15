@@ -1,32 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import agent from "../api/agent";
-import { useAccount } from "./useAccount";
 import { useLocation } from "react-router";
+import { useAccount } from "./useAccount";
 
 export const useActivities = (id?: string) => {
   const queryClient = useQueryClient();
+  const location = useLocation();
   const { currentUser } = useAccount();
 
-  const location = useLocation();
-
-  const { isPending, data: activities } = useQuery({
+  const { isLoading, data: activities } = useQuery({
     queryKey: ["activities"],
     queryFn: async () => {
       const response = await agent.get<Activity[]>("/activities");
       return response.data;
     },
-    enabled: !id && !!currentUser && location.pathname == "/activities",
+    enabled: !id && location.pathname === "/activities" && !!currentUser,
     select: (data) => {
       return data.map((activity) => {
         return {
           ...activity,
-          //check if the current user is going to the activity or not
-          //some(): Checks if at least one item matches a condition.
-          isGoing: activity.attendees.some((a) => a.id === currentUser?.id),
-          // Checks if the current user is the host of the activity.
-          isHost: activity.attendees.some(
-            (a) => a.id === currentUser?.id && a.id === activity.hostId,
-          ),
+          isHost: currentUser?.id === activity.hostId,
+          isGoing: activity.attendees.some((x) => x.id === currentUser?.id),
         };
       });
     },
@@ -42,18 +36,15 @@ export const useActivities = (id?: string) => {
     select: (data) => {
       return {
         ...data,
-        //check if the current user is going to the activity or not
-        //some(): Checks if at least one item matches a condition.
-        isGoing: data.attendees.some((a) => a.id === currentUser?.id),
-        // Checks if the current user is the host of the activity.
-        isHost: data.attendees.some((a) => a.id === currentUser?.id && a.id === data.hostId),
+        isHost: currentUser?.id === data.hostId,
+        isGoing: data.attendees.some((x) => x.id === currentUser?.id),
       };
     },
   });
 
   const updateActivity = useMutation({
     mutationFn: async (activity: Activity) => {
-      await agent.put(`/activities/${activity.id}`, activity);
+      await agent.put("/activities", activity);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -85,13 +76,60 @@ export const useActivities = (id?: string) => {
     },
   });
 
+  const updateAttendance = useMutation({
+    mutationFn: async (id: string) => {
+      await agent.post(`/activities/${id}/attend`);
+    },
+    onMutate: async (activityId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["activities", activityId] });
+
+      const prevActivity = queryClient.getQueryData<Activity>(["activities", activityId]);
+
+      queryClient.setQueryData<Activity>(["activities", activityId], (oldActivity) => {
+        if (!oldActivity || !currentUser) {
+          return oldActivity;
+        }
+
+        const isHost = oldActivity.hostId === currentUser.id;
+        const isAttending = oldActivity.attendees.some((x) => x.id === currentUser.id);
+
+        return {
+          ...oldActivity,
+          isCancelled: isHost ? !oldActivity.isCancelled : oldActivity.isCancelled,
+          attendees: isAttending
+            ? isHost
+              ? oldActivity.attendees
+              : oldActivity.attendees.filter((x) => x.id !== currentUser.id)
+            : [
+                ...oldActivity.attendees,
+                {
+                  id: currentUser.id,
+                  displayName: currentUser.displayName,
+                  imageUrl: currentUser.imageUrl,
+                },
+              ],
+        };
+      });
+
+      return { prevActivity };
+    },
+    onError: (error, activityId, context) => {
+      console.error("Error updating attendance:", error);
+
+      if (context?.prevActivity) {
+        queryClient.setQueryData(["activities", activityId], context.prevActivity);
+      }
+    },
+  });
+
   return {
     activities,
-    isPending,
+    isLoading,
     updateActivity,
     createActivity,
     deleteActivity,
     activity,
     isLoadingActivity,
+    updateAttendance,
   };
 };
