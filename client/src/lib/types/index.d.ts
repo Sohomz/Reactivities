@@ -18,7 +18,7 @@ type Activity = {
 
 type Profile = {
   id: string;
-  dislayName: string;
+  displayName: string;
   bio?: string;
   imageUrl?: string;
 };
