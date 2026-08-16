@@ -9,6 +9,7 @@ namespace Domain
         public string? ImageUrl { get; set; }
 
         //navigation props
-        public ICollection<ActivityAttendee>? Activities {get;set;} = [];
+        public ICollection<ActivityAttendee>? Activities { get; set; } = [];
+        public ICollection<Photo> Photos { get; set; } = [];
     }
 }
