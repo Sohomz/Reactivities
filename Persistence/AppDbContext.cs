@@ -5,16 +5,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Persistence;
 
 //options is a class that contains all the options for configuring appsettings the context
-public class AppDbContext (DbContextOptions options) : IdentityDbContext<User>(options)
+public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(options)
 {
-    public DbSet<Domain.Activity> Activities {get; set;}
-    public DbSet<Domain.ActivityAttendee> ActivityAttendees {get; set;}
+    public DbSet<Domain.Activity> Activities { get; set; }
+    public required DbSet<Domain.ActivityAttendee> ActivityAttendees { get; set; }
+    public required DbSet<Photo> Photos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<ActivityAttendee>(x => x.HasKey(aa => new {aa.UserId, aa.ActivityId}));
+        builder.Entity<ActivityAttendee>(x => x.HasKey(aa => new { aa.UserId, aa.ActivityId }));
 
         builder.Entity<ActivityAttendee>()
             .HasOne(aa => aa.User)
